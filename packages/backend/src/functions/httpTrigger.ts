@@ -3,7 +3,6 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import { BlockBlobClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import * as bs58 from 'bs58';
 import * as JSON5 from 'json5';
-import { EmailClient } from "@azure/communication-email";
 
 
 
