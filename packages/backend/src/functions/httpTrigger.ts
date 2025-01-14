@@ -19,7 +19,7 @@ interface ProvenanceRecord {
     attachments?: readonly string[],
 }
 
-async function sha256(data: BufferSource) {
+export async function sha256(data: BufferSource) {
     const buffer = await crypto.subtle.digest("SHA-256", data);
     return new Uint8Array(buffer);
 }
@@ -35,6 +35,7 @@ export function fromHex(hex: string): Uint8Array {
 export function decodeKey(key: string): Uint8Array {
     const $key = bs58.decode(key);
     switch ($key.length) {
+        // AES-CBC keys are 16, 24, or 32 bytes long
         case 16:
         case 24:
         case 32:
@@ -63,7 +64,7 @@ function fnv1(input: Uint8Array): bigint {
     return hash;
 }
 
-function calculateLegacyDeviceID(key: string | Uint8Array): bigint {
+export function calculateLegacyDeviceID(key: string | Uint8Array): bigint {
     // if key is a string, convert it to a buffer
     key = typeof key === 'string' ? decodeKey(key) : key;
     return fnv1(key);
