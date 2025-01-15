@@ -30,8 +30,3 @@ export const mockAzureFunctions = {
 
 export { routeRegistrations }
 export default mockAzureFunctions
-
-// Mock the Azure InvocationContext and HttpRequest
-// so that we can verify that the expected parameters
-// are passed to the function handler
-
