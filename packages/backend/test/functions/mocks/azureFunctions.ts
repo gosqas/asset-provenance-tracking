@@ -19,10 +19,19 @@ export const mockAzureFunctions = {
     put: vi.fn(),
     delete: vi.fn(),
   },
-  InvocationContext: vi.fn(),
+  InvocationContext: vi.fn().mockImplementation(() => ({
+    log: vi.fn().mockImplementation((...args: any) => {
+      console.log(...args);
+    }),
+  })),
   HttpRequest: vi.fn(),
   HttpResponse: vi.fn(),
 }
 
 export { routeRegistrations }
 export default mockAzureFunctions
+
+// Mock the Azure InvocationContext and HttpRequest
+// so that we can verify that the expected parameters
+// are passed to the function handler
+
