@@ -234,7 +234,13 @@ const containerClient = new ContainerClient(`${baseUrl}/gosqas`, cred);
 export async function getProvenance(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const deviceKey = decodeKey(request.params.deviceKey);
     const deviceID = await calculateDeviceID(deviceKey);
-    context.log(`getProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
+    
+    // This is a bit of a hack because the context.log mock doesnt't work.
+    try {
+        context.log(`getProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
+    } catch {
+        console.log(`getProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
+    }
 
     const containerExists = await containerClient.exists();
     if (!containerExists) { return { jsonBody: [] }; }
@@ -300,7 +306,7 @@ export async function postProvenance(request: HttpRequest, context: InvocationCo
     const deviceKey = decodeKey(request.params.deviceKey);
     const deviceID = await calculateDeviceID(deviceKey);
     context.log(`postProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
-
+    
     await containerClient.createIfNotExists();
 
     const formData = await request.formData();
