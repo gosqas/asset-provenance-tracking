@@ -19,7 +19,6 @@ describe('calculateDeviceID function', () => {
     it('should calculate a device ID', async () => {
         const deviceKey = await sha256(Buffer.from('somekey', 'utf8'));
         const deviceID = await calculateDeviceID(deviceKey);
-        console.log('deviceID', deviceID);
         expect(deviceID).toBeDefined();
     });
 });

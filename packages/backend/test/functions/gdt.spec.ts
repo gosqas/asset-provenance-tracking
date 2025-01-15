@@ -29,7 +29,6 @@ describe('Test GDT API', () => {
         })
     });
 
-    
     // TODO: test more routes
 
     it('should register all expected routes', () => {
