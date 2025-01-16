@@ -4,6 +4,7 @@ import { BlockBlobClient, ContainerClient, StorageSharedKeyCredential } from "@a
 import * as bs58 from 'bs58';
 import * as JSON5 from 'json5';
 
+
 // To deploy this project from the command line, you need:
 //  * Azure CLI : https://learn.microsoft.com/en-us/cli/azure/
 //  * Azure Functions Core Tools: https://github.com/Azure/azure-functions-core-tools/blob/v4.x/README.md
@@ -404,3 +405,8 @@ app.get("getStatistics", {
     route: 'statistics',
     handler: getStatistics
 })
+
+
+
+
+

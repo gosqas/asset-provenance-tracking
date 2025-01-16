@@ -15,9 +15,11 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@azure/communication-email": "^1.0.0",
     "@azure/functions": "^4.5.1",
     "@azure/storage-blob": "^12.24.0",
     "bs58": "^5.0.0",
+    "dotenv": "^16.4.5",
     "json5": "^2.2.3"
   },
   "devDependencies": {
