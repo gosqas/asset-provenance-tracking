@@ -26,16 +26,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
             <div class="col-12 col-md-7" id="first-row-col">
                 <div class="row"> <h1>Trust and transparency when you need it most.</h1> </div>
                 <div class="row"> <h4>Explore Global Distributed Tracking (GDT), our open source software enabling closed-loop tracking for products, information, and logistics.</h4> </div>
-                <div class="row" style=" margin-bottom: 60px; margin-top:20px; display:inline-flex">
-                    <form style="margin-bottom: 20px; width:40%; width: 190px; padding-right: 0px;" @submit.prevent="trackingForm">
-                        <button-component class="button" id="trackButton" buttonText="View Record" type="submit" style="opacity:100;"
+                <div class="row" style="margin-top:20px; display:inline-flex">
+                    <form id="viewRecordButton" style="margin-right: 8px; width:40%; width: 190px; padding-right: 0px;" @submit.prevent="trackingForm">
+                        <button-component class="button" id="homeTrackButton" buttonText="View Record" type="submit" style="opacity:100;"
                             padding="18px 22px"></button-component>
                     </form>
-                    <div style="margin-bottom: 20px; width: 60%; width: 230px;" >
-                        <RouterLink to="/gdt"><button-component class="button" buttonText="Create Record" backgroundColor="#CCECFD"
+                    <div id="createRecordButton" style="width: 60%; width: 230px;" >
+                        <RouterLink to="/gdt"><button-component class="button" id="homeCreateButton" buttonText="Create Record" backgroundColor="#CCECFD"
                             borderColor="#CCECFD" color="#1E2019" padding="18px 22px" margin="0px 0px 0px 0px"></button-component></RouterLink>
                     </div>
-                    <div id="homeTrackAssetDiv" style="visibility: hidden;">
+                    <div id="homeTrackAssetDiv" style="visibility: hidden; height: 0px; padding-bottom: 20px;">
                         <TrackAsset inputWidth="75%"></TrackAsset>
                     </div>
                 </div>
@@ -88,12 +88,18 @@ export default {
                 trackAssetDiv.style.visibility="visible"; //make text input available
                 trackButton.style.backgroundColor = "#322253";
                 trackButton.style.borderColor = "#322253";
+                trackAssetDiv.style.height = "auto";
+
+                // trackAssetDiv.style.paddingTop = "20px";
 
             } else { 
                 showTrack = false; 
                 trackAssetDiv.style.visibility="hidden";
                 trackButton.style.backgroundColor = "#4E3681";
                 trackButton.style.borderColor = "#4E3681";
+                trackAssetDiv.style.height = "0px";
+
+                // trackAssetDiv.style.paddingTop = "0px";
             }
         },
     }
@@ -123,8 +129,6 @@ export default {
     background-size: 60%;
 
     height: auto;
-    min-height: 369px;
-    max-height: 500px;
     display: flex;  
     flex-wrap: wrap;
 }
@@ -132,10 +136,8 @@ export default {
 /* For screens less than 991px resize hand logo*/
 @media (max-width: 991px) {
     #first-row {
-        background-size: 80%;
+        background-size: 50% !important;
         height: auto;
-        min-height: 372px;
-        max-height: 525px;
     }
     h1 {
         font-size: 32px !important;
@@ -150,7 +152,7 @@ export default {
 /* For screens less than 768px */
 @media (max-width: 768px) {
     #first-row-col{
-        padding: 41px 33px;
+        padding: 41px 33px 80px 33px;
     }
     #second-row{
         padding: 40px 30px;
@@ -168,26 +170,29 @@ export default {
         font-size: 18px;
     }
     #first-row {
-        background-size: 80%;
-        height: 450px;
+        background-size: 60% !important;
+    }
+    #viewRecordButton {
+        margin-right: 5px !important;
+        width: 180px !important;
+    }
+    #createRecordButton {
+        order: 1; 
     }
 }
 
 /* For screens less than 381px resize hand logo */
 @media (max-width: 381px) {
     #first-row {
-        background-size: 60%;
+        background-size: 90% !important;
         background-position-x: 95%;
-
-        /* Resize white box containing the hand logo */
-        min-height: 675px !important;
     }
 }
 
 /* For screens greater than 768px */
 @media (min-width: 768px) {
     #first-row-col{
-        padding: 60px 78px
+        padding: 60px 78px;
     }
     #second-row {
         padding: 70px 100px;
@@ -206,18 +211,11 @@ export default {
 
 }
 
-/* Resize the top white box to make sure the buttons don't go out of bounds */
 @media (max-width: 1083px) {
     #first-row {
         background-size: 70%;
-        max-height: 600px;
     }
 }
 
-@media (max-width: 445px) {
-    #first-row {
-        min-height: 600px;
-    }
-}
 
 </style>

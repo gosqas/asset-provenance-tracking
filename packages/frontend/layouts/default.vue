@@ -227,7 +227,10 @@ export default {
             text-decoration: none;
         }
         #viewRecordInput {
-            padding: 20px 0px 0 0;            
+            padding-right: 0px;            
+        }
+        #nav {
+            padding-bottom: 24.5px !important;
         }
         
         /* Make footer wrap */
@@ -269,7 +272,7 @@ export default {
         }
 
         #viewRecordInput {
-            padding: 20px 20px 0 0;
+            padding-right: 20px;
         }
     }
 
