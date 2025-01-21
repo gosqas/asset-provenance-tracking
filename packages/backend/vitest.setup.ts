@@ -5,7 +5,7 @@ import { mockAzureStorage } from './test/functions/mocks/azureStorage'
 // Global setup for all tests
 
 // Mock Azure Functions for testing
-vi.mock('@azure/functions', () => mockAzureFunctions)
+vi.mock('@azure/functions', () => mockAzureFunctions);
 vi.mock('@azure/storage-blob', async () => mockAzureStorage);
 
 // Suppress console output

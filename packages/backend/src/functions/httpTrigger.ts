@@ -278,7 +278,7 @@ async function getDecryptedBlob(request: HttpRequest, context: InvocationContext
     return await decryptBlob(blobClient, deviceKey);
 }
 
-async function getAttachment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function getAttachment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const decryptedBlob = await getDecryptedBlob(request, context);
     if (!decryptedBlob) { return { status: 404 } }
 
@@ -294,7 +294,7 @@ async function getAttachment(request: HttpRequest, context: InvocationContext): 
     return { body: data, headers };
 };
 
-async function getAttachmentName(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function getAttachmentName(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const decryptedBlob = await getDecryptedBlob(request, context);
     if (!decryptedBlob) { return { status: 404 } }
 
