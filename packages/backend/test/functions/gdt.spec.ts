@@ -1,10 +1,10 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { routeRegistrations } from './mocks/azureFunctions'
-import { getProvenance, postProvenance } from '../../src/functions/httpTrigger'
-import { HttpRequest, InvocationContext } from '@azure/functions'
+import { getProvenance, postProvenance, getAttachment, getAttachmentName } from '../../src/functions/httpTrigger'
 import { makeEncodedDeviceKey } from './utils'
 import { ContainerClient } from '@azure/storage-blob'
 import * as JSON5 from 'json5';
+import { HttpRequest, InvocationContext } from '@azure/functions' // This should import from our mocks
 
 describe('Test GDT API', () => {
     beforeEach(async () => {
@@ -98,6 +98,23 @@ describe('Test GDT API', () => {
             const context = {} as InvocationContext;
 
             const response = await getProvenance(request, context);
+
+            console.log(response);
+            expect(response )
+            // expect(response.status).toBe(200);
+        });
+    });
+
+    describe.skip('getAttachment', () => {
+        it('should return data', async () => {
+            const request = {
+                params: { deviceKey: await makeEncodedDeviceKey() }
+            } as unknown as HttpRequest;
+            const context = {
+                log: vi.fn(),
+            } as unknown as InvocationContext;
+
+            const response = await getAttachment(request, context);
 
             console.log(response);
             expect(response )

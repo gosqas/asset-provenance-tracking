@@ -9,16 +9,21 @@ const routeRegistrations: any[] = []
 export const mockAzureFunctions = {
   app: {
     get: vi.fn().mockImplementation((name, options) => {
-      console.log('Route registered:', name, options)
+      // console.log('Route registered:', name, options)
       routeRegistrations.push({ method: 'get', name, options })
     }),
     post: vi.fn().mockImplementation((name, options) => {
-      console.log('Route registered:', name, options)
+      // console.log('Route registered:', name, options)
       routeRegistrations.push({ method: 'post', name, options })
     }),
     put: vi.fn(),
     delete: vi.fn(),
   },
+  context: vi.fn().mockImplementation(() => ({
+    log: vi.fn().mockImplementation((...args: any) => {
+      console.log(...args);
+    }),
+  })),
   InvocationContext: vi.fn().mockImplementation(() => ({
     log: vi.fn().mockImplementation((...args: any) => {
       console.log(...args);
@@ -29,4 +34,3 @@ export const mockAzureFunctions = {
 }
 
 export { routeRegistrations }
-export default mockAzureFunctions
