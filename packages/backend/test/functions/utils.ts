@@ -12,7 +12,7 @@ export async function makeDeviceKey(): Promise<Uint8Array> {
     return new Uint8Array(buffer).slice();
 }
 
-function encodeDeviceKey(key: Uint8Array): string {
+export function encodeDeviceKey(key: Uint8Array): string {
     return base58.encode(key);
 }
 
