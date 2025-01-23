@@ -78,8 +78,11 @@ export async function encrypt(key: Uint8Array, data: BufferSource, salt?: Uint8A
 }
 
 export async function decrypt(key: Uint8Array, salt: Uint8Array, encryptedData: Uint8Array): Promise<Uint8Array> {
+    console.log("Inside decrypt");
     const $key = await crypto.subtle.importKey("raw", key, "AES-CBC", false, ["decrypt"]);
+    console.log("salt", salt, "key", key, "encryptedData", encryptedData);
     const result = await crypto.subtle.decrypt({ name: "AES-CBC", iv: salt }, $key, encryptedData);
+    console.log("result", result);
     return new Uint8Array(result);
 }
 
@@ -147,22 +150,27 @@ interface DecryptedBlob {
 
 async function decryptBlob(client: BlockBlobClient, deviceKey: Uint8Array): Promise<DecryptedBlob> {
     const props = await client.getProperties();
+    console.log("Inside decryptBlob");
+    console.log("props", props); 
     const salt = props.metadata?.["gdtsalt"];
     if (!salt) throw new Error(`Missing Salt ${client.name}`);
     const timestamp = parseInt(props.metadata?.["gdttimestamp"]);
     if (isNaN(timestamp) || !isFinite(timestamp)) throw new Error(`Invalid Timestamp ${client.name}`);
 
-    const buffer = await client.downloadToBuffer();
+    const buffer = await client.downloadToBuffer(); // encrypted data
     const saltBuffer = fromHex(salt);
+    console.log("Data:\n", deviceKey, saltBuffer, buffer);
     const data = await decrypt(deviceKey, saltBuffer, buffer);
     const hash = props.metadata?.["gdthash"];
+    console.log("hash", hash);
     if (hash) {
         if (!areEqual(fromHex(hash), await sha256(data))) {
             throw new Error(`Invalid Hash ${client.name}`);
         }
     }
 
-    const contentType = props.metadata?.["gdtcontenttype"];
+    const contentType = props.metadata?.["gdtcontenttype"]; /////////////////////
+    console.log("contentType", contentType);
     const encryptedName = props.metadata?.["gdtname"] ?? "";
     const encodedName = encryptedName.length > 0 ? await decrypt(deviceKey, saltBuffer, fromHex(encryptedName)) : undefined;
     const filename = encodedName ? new TextDecoder().decode(encodedName) : undefined;
@@ -266,16 +274,22 @@ async function getDecryptedBlob(request: HttpRequest, context: InvocationContext
     const deviceKey = decodeKey(request.params.deviceKey);
     const deviceID = await calculateDeviceID(deviceKey);
     const attachmentID = request.params.attachmentID;
-    context.log(`getDecryptedBlob`, { accountName, deviceKey: request.params.deviceKey, deviceID, attachmentID });
+    // context.log(`getDecryptedBlob`, { accountName, deviceKey: request.params.deviceKey, deviceID, attachmentID });
+    console.log(`getDecryptedBlob`, { accountName, deviceKey: request.params.deviceKey, deviceID, attachmentID });
 
     const containerExists = await containerClient.exists();
+    console.log("containerExists", containerExists);
     if (!containerExists) { return undefined; }
 
     const blobClient = containerClient.getBlockBlobClient(`attach/${attachmentID}`);
+    console.log("blobClient", blobClient);
     const exists = await blobClient.exists();
     if (!exists) { return undefined; }
+    console.log("exists", exists);
 
-    return await decryptBlob(blobClient, deviceKey);
+    const answer = await decryptBlob(blobClient, deviceKey);
+    console.log("answer", answer);
+    return answer;
 }
 
 export async function getAttachment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
