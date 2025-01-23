@@ -1,7 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { vi } from 'vitest';
 import { sendEmail } from "./sendEmail";
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { post } from '@azure/functions/types/app';
 import { getProvenance, postProvenance } from './httpTrigger';
 
 vi.mock('@azure/communication-email', () => {
@@ -24,15 +23,26 @@ vi.mock('@azure/communication-email', () => {
     };
 });
 
-export async function sendNotification(to_address: string) {
-    const from_address = process.env['FROM_ADDRESS'] || '';
-    // const to_address = "user.email"
-    const subject = "Create a subject line here";
-    const body = "Create a body here";
-    const displayName = "User Name";
 
-    await sendEmail(from_address, to_address, subject, body, displayName);
+export interface Notification {
+    toAddress: string;
+    toName: string;
+    subject: string;
+    body: string;
 }
+
+
+export async function sendNotification(notification: Notification): Promise<void> {
+    // TODO: add rate limiting, queueing, other notification channels and other notification logic
+
+    try {
+        const from_address = process.env['FROM_ADDRESS'] || '';
+        await sendEmail(from_address, notification.toAddress, notification.subject, notification.body, notification.toName);
+    } catch (error) {
+        console.error("Failed to send notification", error);
+    }
+}
+
 
 async function streamToObject(body) {
     if (!body) {
@@ -189,8 +199,13 @@ export async function unsubscribeNotification(request: HttpRequest, context: Inv
 
 export async function notifySubscribers(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     // When a provenance record is updated, this function will process the subscriptions and send notifications
+    
+    // Ideally only the subscription object should be needed, so the notification system can be decoupled from the 
+    // provenance system prove that it works without provenance data
 
     console.log("notifySubscribers", JSON.stringify(request));
+
+    // TODO: // This could take a long time! Add rate limiting, queueing etc.
 
     try {
         const obj = await streamToObject(request.body);
@@ -204,7 +219,14 @@ export async function notifySubscribers(request: HttpRequest, context: Invocatio
         // Send email to each subscriber
         for (const subscriber of obj.subscribers) {
             console.log("Sending notification to", subscriber);
-            await sendNotification(subscriber.email);
+            const notification = {
+                toAddress: subscriber,
+                toName: "Notification",
+                subject: "Notification",
+                body: "Notification body"
+            };
+            
+            await sendNotification(notification);
         }
 
     } catch (error) {

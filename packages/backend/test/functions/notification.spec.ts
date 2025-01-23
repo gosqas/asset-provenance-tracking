@@ -23,37 +23,41 @@ describe('sendNotification', () => {
 
     it('should call sendEmail with correct parameters', async () => {
         process.env['FROM_ADDRESS'] = 'test@example.com';
-        const to_address = "user.email";
-        const subject = "Create a subject line here";
-        const body = "Create a body here";
-        const displayName = "User Name";
+        const notification = {
+            toAddress: "user.email",
+            toName: "User Name",
+            subject: "Create a subject line here",
+            body: "Create a body here"
+        }
 
-        await sendNotification(to_address);
+        await sendNotification(notification);
 
         expect(sendEmail).toHaveBeenCalledWith(
             'test@example.com',
-            to_address,
-            subject,
-            body,
-            displayName
+            notification.toAddress,
+            notification.subject,
+            notification.body,
+            notification.toName
         );
     });
 
     it('should use empty string if FROM_ADDRESS is not defined', async () => {
         delete process.env['FROM_ADDRESS'];
-        const to_address = "user.email";
-        const subject = "Create a subject line here";
-        const body = "Create a body here";
-        const displayName = "User Name";
+        const notification = {
+            toAddress: "user.email",
+            toName: "User Name",
+            subject: "Create a subject line here",
+            body: "Create a body here"
+        }
 
-        await sendNotification(to_address);
+        await sendNotification(notification);
 
         expect(sendEmail).toHaveBeenCalledWith(
             '',
-            to_address,
-            subject,
-            body,
-            displayName
+            notification.toAddress,
+            notification.subject,
+            notification.body,
+            notification.toName
         );
     });
 });
