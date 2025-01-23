@@ -1,24 +1,51 @@
 import { vi } from 'vitest'
-import { getRandomValues } from 'crypto';
-// import { encrypt } from '../../../src/functions/httpTrigger';
-// import { makeDeviceKey } from '../utils';
+import { ContainerClient } from '@azure/storage-blob';
+import { encodeDeviceKey } from '../utils';
 
+// Copied from backend (not great!)
+async function sha256(data: BufferSource) {
+    const buffer = await crypto.subtle.digest("SHA-256", data);
+    return new Uint8Array(buffer);
+}
 
-async function init() {
+function toHex(data: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>): string {
+    return Buffer.from(data).toString("hex");
+}
+
+export async function mockKeySaltData(data: Uint8Array) {
     const { makeDeviceKey } = await import('../utils');
     const { encrypt } = await import('../../../src/functions/httpTrigger');
-    // const salt = getRandomValues(new Uint8Array(16));
-    const data = Buffer.alloc(1024, 'a');
     const deviceKey = await makeDeviceKey();
     const { salt, encryptedData } = await encrypt(deviceKey, data);
-    // return { deviceKey, salt, encryptedData };
-    return encryptedData;
+    return { deviceKey, salt, encryptedData };
 }
+
+let encryptedData: Uint8Array<ArrayBuffer>;
+
+async function mockProperties() {
+    const unencryptedData = Buffer.alloc(1024, 'a');
+    const s = await mockKeySaltData(unencryptedData);
+    const dk =  encodeDeviceKey(s.deviceKey);
+    const hash = toHex(await sha256(unencryptedData));
+    encryptedData = s.encryptedData; // Store the encrypted data in the global scope
+    return {
+        "deviceKey": dk, // For testing only
+        "metadata": {
+                "gdtsalt": s.salt,
+                "gdttimestamp": new Date().toISOString(),
+                "gdthash": hash,
+                "gdtcontenttype": "deviceHeader",
+            }
+        }
+}
+
+// Run mockProperties to initialize encryptedData
+const props = mockProperties();
 
 // Mock the Azure Storage Blob SDK
 const mockUploadBlockBlob = vi.fn().mockResolvedValue({});
 const mockCreateIfNotExists = vi.fn().mockResolvedValue({});
-const mockContainerClient = {
+const mockContainerClient: Partial<ContainerClient> = {
     uploadBlockBlob: mockUploadBlockBlob,
     createIfNotExists: mockCreateIfNotExists,
     exists: vi.fn().mockResolvedValue(true),
@@ -32,22 +59,12 @@ const mockContainerClient = {
     }),
     getBlockBlobClient: vi.fn().mockImplementation(() => ({
         exists: vi.fn().mockResolvedValue(true),
-        // downloadToBuffer: vi.fn().mockResolvedValue(Buffer.alloc(1024, 'a')), // encrypted data
-        downloadToBuffer: (() => {
-            // init().then((data) => { return data });
-            // return vi.fn().mockResolvedValue(init());
-            return Buffer.alloc(1024, 'a');
-        }),
-        getProperties: vi.fn().mockResolvedValue({
-            "metadata": {
-                "gdtsalt": getRandomValues(new Uint8Array(16)),// bs58.encode(randomBytes(16)), //Buffer.from('dummy_salt_value', 'utf8')),
-                "gdttimestamp": new Date().toISOString(),
-                "gdthash": "dummy_hash_value",
-                "gdtcontenttype": "deviceHeader",
-            }
-        }),
+        getProperties: vi.fn().mockResolvedValue(props),
+        downloadToBuffer: vi.fn().mockResolvedValue(encryptedData), // encrypted data
+        name: 'testBlockBlobClient',
     })),
 };
+
 
 export const mockAzureStorage = {
     ContainerClient: vi.fn(() => mockContainerClient),
