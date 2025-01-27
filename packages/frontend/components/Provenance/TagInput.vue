@@ -16,11 +16,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
 
 
 <template>
-  <input :value="editableValue" @input="onInput" />
+  <div class="container">
+    <input id="tagInputField" class="form-control" required placeholder="Record Tag" :value="editableValue" @input="onInput" />
+
+    <h5 class="mt-3 mb-1 text-iris">Suggested Tags</h5>
+    <div class="tag-container mb-2">
+      <button class="tag" type="button" v-for="tag in TagName" v-bind:style="'color: '+textColorForTag(tag)+'; background-color: '+getColorForTag(tag)+';'" 
+      @click="moveTagToForm(tag)">{{ tag }}</button>
+    </div>
+  </div>
 </template>
 
 <script>
 import { getDecipheredForbiddenTags } from '~/utils/forbiddenTags';
+import { TagName } from "~/utils/tags";
 
 export default {
   name: 'TagInput',
@@ -56,7 +65,7 @@ export default {
     },
   },
   methods: {
-    cleanArray(arr) { //check to see if correct
+    cleanArray(arr) { //checking to see if correct
         const forbiddenWords = getDecipheredForbiddenTags();
         const cleanedArray = arr.filter (tagName => !forbiddenWords.includes (tagName.toLowerCase ()));
         return cleanedArray;
@@ -64,6 +73,38 @@ export default {
     onInput(event) {
       this.editableValue = event.target.value;
     },
+    moveTagToForm(tag, event) {
+      if (document.getElementById('tagInputField')) {
+          const inputField = document.getElementById('tagInputField');
+          this.editableValue += tag + ' ';
+      }
+    },
   },
 };
 </script>
+
+<style>
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    color: #333;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+  }
+
+  .container {
+    background-color: transparent;
+    padding: 0px;
+  }
+
+  #editableValue {
+    margin-top: 5px;
+    padding-top: 5px;
+  }
+</style>

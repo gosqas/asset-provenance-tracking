@@ -43,17 +43,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
             <input type="file" class="form-control" accept="*" @change="onFileChange" capture="environment" multiple />
         </div>
         <h5 class="text-iris">Add Tags (optional)</h5>
-        <ProvenanceTagInput class="form-control" id="provenanceTag" v-model="tags" @updateTags="handleUpdateTags" placeholder="Record Tag"/>
+        <ProvenanceTagInput id="provenanceTag" v-model="tags" @updateTags="handleUpdateTags" placeholder="Record Tag"/>
         <div>
             <span v-for="(tag, index) in tags" :key="tag">{{ tag }}{{ index !== tags.length - 1 ? ', ' : '' }} </span>
         </div>
         <!-- <h5 class="text-iris p-1 mt-0" v-if="isGroup">
             <input type="checkbox" class="form-check-input" id="notify-all" v-model="notifyAll"/> Notify all Children?
         </h5> -->
-    </div>
-    <div class="d-grid" id="submit-button">
-        <button-component buttonText="Create Record Entry" type="submit" />
-    </div>
+      </div>
+      <div class="d-grid mt-3" id="submit-button">
+            <ButtonComponent class="mb-0 submit-btn" buttonText="Create Record Entry" type="submit" />
+      </div>
     </form>
 </template>
 
@@ -216,13 +216,8 @@ export default {
   form {
       border-radius: 6px;
       display: block;
-      margin-bottom: 30px;
+      margin-bottom: 70px;
   }
-  /* Style for the placeholder text */
-    .form-control::placeholder {
-    color: gray;
-    font-size: 18px;
-}
 
   #submit-button {
       margin-top: 24px;
@@ -237,18 +232,12 @@ export default {
     font-size:18px;
   }
 
-  input[type=file] {
-    height:36px;
-    font-size: 18px;
-    line-height: 27px;
-  }
-
   input[type=checkbox] {
     margin-right: 10px;
   }
 
   #provenanceTag{
-    height: 36px;
+    /* height: 36px; */
     border-radius: 6px;
     width: 100%;
     font-size: 18px;
@@ -267,7 +256,7 @@ export default {
     }
   }
 
-  /*  For screens larger than 768px */
+  /* For screens larger than 768px */
   @media (min-width: 768px) {
     h5{
         margin-top: 24px;

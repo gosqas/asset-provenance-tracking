@@ -25,7 +25,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
     <form enctype="multipart/form-data" class="bg-frost p-3" @submit.prevent="submitForm">
         <h4 class="text-iris mt-1 mb-3">Create New Record</h4>
  
- 
         <div>
             <input type="text" class="form-control" v-model="name" required placeholder="Record Name">
             <input type="text" class="form-control mt-3" v-model="description" required placeholder="Record Description">
@@ -34,17 +33,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
                 <input type="file"  class="form-control " accept="*" @change="onFileChange" capture="environment" multiple />
             </div>
  
- 
             <h4 class="mt-3 mb-3 text-iris">Add Tags (optional)</h4>
-            <ProvenanceTagInput class="form-control mt-1" placeholder="Record Tag" v-model="tags" @updateTags="handleUpdateTags"/>
+            <ProvenanceTagInput id="recordTags" v-model="tags" @updateTags="handleUpdateTags"/>
             <div>
                 <span v-for="(tag, index) in tags" :key="tag"> {{ tag }}{{ index !== tags.length - 1 ? ', ' : '' }}</span>
             </div>
         </div>
  
- 
         <div class="d-grid">
-            <ButtonComponent class="my-4 mb-0 submit-btn" buttonText="Create Record" type="submit" />
+            <ButtonComponent class="my-3 mb-0 submit-btn" buttonText="Create Record" type="submit" />
         </div>
     </form>
 </template>
