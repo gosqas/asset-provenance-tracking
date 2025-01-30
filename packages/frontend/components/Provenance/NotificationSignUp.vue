@@ -17,24 +17,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
 
 <template>
     <div>
-        <form @submit.prevent="submitForm">
-            <h2>Notification Sign Up</h2>
+        <form  class="bg-frost p-3"  @submit.prevent="submitForm">
+            <h4 class="text-iris">Notification Sign Up</h4>
             <div class="form-group">
-                <label for="email">Email:</label>
+                <label for="email" class="mt-3 mb-3 text-iris">Email:</label>
                 <input type="email" id="email" v-model="email" required class="form-control">
             </div>
             
             <div class="form-group">
-                <label for="tag">Tag:</label>
+                <label for="tag" class="mt-3 mb-3 text-iris">Tag:</label>
                 <input type="text" id="tag" v-model="tag" required class="form-control">
             </div>
             
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <ButtonComponent class="my-4 mb-0 submit-btn" buttonText="Sign Up" type="submit" />
         </form>
     </div>
 </template>
 
 <script>
+
 export default {
     data() {
         return {
@@ -42,28 +43,17 @@ export default {
             tag: ''
         };
     },
+    props: {
+        recordKey: {
+            type: String,
+            default: "",
+        },
+    },
     methods: {
         // Will send tag and email data to database
-        submitForm() {
-            // // Send the email and tag via API
-            // // Replace the API_URL with your actual API endpoint
-            // fetch(API_URL, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify({
-            //         email: this.email,
-            //         tag: this.tag
-            //     })
-            // })
-            // .then(response => {
-            //     // Handle the API response
-            //     // You can show a success message or redirect to another page
-            // })
-            // .catch(error => {
-            //     // Handle any errors that occur during the API request
-            // });
+        async submitForm() {
+            console.log("submitting form", this.email, this.tag);
+            await subscribeNotification(this.recordKey, this.email, ["subscribe", this.tag]);
         }
     }
 };

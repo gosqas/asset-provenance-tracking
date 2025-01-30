@@ -36,5 +36,16 @@ export default defineNuxtConfig({
     bottom: true,
     duration: 5000
   },
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern',
+          // Silence Bootstrap SCSS deprecation warnings until they are fixed
+          silenceDeprecations: ['mixed-decls', 'import', 'color-functions', 'global-builtin'],
+        },
+      }
+    }
+  },
   compatibilityDate: '2024-11-12'
 });

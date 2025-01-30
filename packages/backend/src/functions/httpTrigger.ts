@@ -1,8 +1,9 @@
 import { webcrypto as crypto } from 'node:crypto';
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { BlockBlobClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
-import * as bs58 from 'bs58';
-import * as JSON5 from 'json5';
+import bs58 from 'bs58';
+import JSON5 from 'json5';
+
 
 
 // To deploy this project from the command line, you need:
@@ -18,7 +19,7 @@ interface ProvenanceRecord {
     attachments?: readonly string[],
 }
 
-async function sha256(data: BufferSource) {
+export async function sha256(data: BufferSource) {
     const buffer = await crypto.subtle.digest("SHA-256", data);
     return new Uint8Array(buffer);
 }
@@ -34,6 +35,7 @@ export function fromHex(hex: string): Uint8Array {
 export function decodeKey(key: string): Uint8Array {
     const $key = bs58.decode(key);
     switch ($key.length) {
+        // AES-CBC keys are 16, 24, or 32 bytes long
         case 16:
         case 24:
         case 32:
@@ -62,7 +64,7 @@ function fnv1(input: Uint8Array): bigint {
     return hash;
 }
 
-function calculateLegacyDeviceID(key: string | Uint8Array): bigint {
+export function calculateLegacyDeviceID(key: string | Uint8Array): bigint {
     // if key is a string, convert it to a buffer
     key = typeof key === 'string' ? decodeKey(key) : key;
     return fnv1(key);
@@ -150,7 +152,7 @@ async function decryptBlob(client: BlockBlobClient, deviceKey: Uint8Array): Prom
     const timestamp = parseInt(props.metadata?.["gdttimestamp"]);
     if (isNaN(timestamp) || !isFinite(timestamp)) throw new Error(`Invalid Timestamp ${client.name}`);
 
-    const buffer = await client.downloadToBuffer();
+    const buffer = await client.downloadToBuffer(); // encrypted data
     const saltBuffer = fromHex(salt);
     const data = await decrypt(deviceKey, saltBuffer, buffer);
     const hash = props.metadata?.["gdthash"];
@@ -229,10 +231,11 @@ const baseUrl = accountName === "devstoreaccount1"
 const cred = new StorageSharedKeyCredential(accountName, accountKey);
 const containerClient = new ContainerClient(`${baseUrl}/gosqas`, cred);
 
-async function getProvenance(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function getProvenance(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const deviceKey = decodeKey(request.params.deviceKey);
     const deviceID = await calculateDeviceID(deviceKey);
-    context.log(`getProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
+    
+    console.log(`getProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
 
     const containerExists = await containerClient.exists();
     if (!containerExists) { return { jsonBody: [] }; }
@@ -254,11 +257,11 @@ async function getProvenance(request: HttpRequest, context: InvocationContext): 
     return { jsonBody: records };
 }
 
-async function getDecryptedBlob(request: HttpRequest, context: InvocationContext): Promise<DecryptedBlob | undefined> {
+export async function getDecryptedBlob(request: HttpRequest, context: InvocationContext): Promise<DecryptedBlob | undefined> {
     const deviceKey = decodeKey(request.params.deviceKey);
     const deviceID = await calculateDeviceID(deviceKey);
     const attachmentID = request.params.attachmentID;
-    context.log(`getDecryptedBlob`, { accountName, deviceKey: request.params.deviceKey, deviceID, attachmentID });
+    console.log(`getDecryptedBlob`, { accountName, deviceKey: request.params.deviceKey, deviceID, attachmentID });
 
     const containerExists = await containerClient.exists();
     if (!containerExists) { return undefined; }
@@ -267,10 +270,11 @@ async function getDecryptedBlob(request: HttpRequest, context: InvocationContext
     const exists = await blobClient.exists();
     if (!exists) { return undefined; }
 
-    return await decryptBlob(blobClient, deviceKey);
+    const answer = await decryptBlob(blobClient, deviceKey);
+    return answer;
 }
 
-async function getAttachment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function getAttachment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const decryptedBlob = await getDecryptedBlob(request, context);
     if (!decryptedBlob) { return { status: 404 } }
 
@@ -286,7 +290,7 @@ async function getAttachment(request: HttpRequest, context: InvocationContext): 
     return { body: data, headers };
 };
 
-async function getAttachmentName(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function getAttachmentName(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const decryptedBlob = await getDecryptedBlob(request, context);
     if (!decryptedBlob) { return { status: 404 } }
 
@@ -297,8 +301,8 @@ async function getAttachmentName(request: HttpRequest, context: InvocationContex
 export async function postProvenance(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const deviceKey = decodeKey(request.params.deviceKey);
     const deviceID = await calculateDeviceID(deviceKey);
-    context.log(`postProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
-
+    console.log(`postProvenance`, { accountName, deviceKey: request.params.deviceKey, deviceID });
+    
     await containerClient.createIfNotExists();
 
     const formData = await request.formData();
@@ -405,8 +409,3 @@ app.get("getStatistics", {
     route: 'statistics',
     handler: getStatistics
 })
-
-
-
-
-

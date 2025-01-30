@@ -13,7 +13,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
 <template>
-    <form enctype="multipart/form-data" class="bg-frost p-3" @submit.prevent="submitForm">
+    <form method="post" enctype="multipart/form-data" class="bg-frost p-3" @submit.prevent="submitForm">
         <h4 class="text-iris mt-1 mb-3">Create New Group</h4>
         <div>
             <input type="text" class="form-control" v-model="name" required placeholder="Group Name">

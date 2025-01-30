@@ -103,6 +103,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
                 <CsvFile :recordKey="_recordKey"></CsvFile>
               </div>
             </section>
+            <section id="notification-signup">
+              <ProvenanceNotificationSignUp :recordKey="_recordKey"/>
+            </section>
             
           </div>
           <!-- Spied element -->
@@ -179,12 +182,15 @@ export default {
           for(let num in headers) {
             let current_id = headers[num].id;
             let sec = document.getElementById(current_id);
-
-            let top = window.scrollY;
-            let offset = sec.offsetTop + 150; // can customize how far from the section to become active
-            let height = sec.offsetHeight;
-            if (top >= offset && top < offset + height) {
-              currentSection.value = current_id;
+            if (sec) {
+              let top = window.scrollY;
+              let offset = sec.offsetTop + 150; // can customize how far from the section to become active
+              let height = sec.offsetHeight;
+              if (top >= offset && top < offset + height) {
+                currentSection.value = current_id;
+              }
+            } else {
+              currentSection.value = "";
             }
           }
         });
