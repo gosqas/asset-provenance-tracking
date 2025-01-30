@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import { ContainerClient } from '@azure/storage-blob';
-import { encodeDeviceKey } from '../utils';
+import { encodeDeviceKey } from '../utils.js';
 
 // Copied from backend (not great!)
 async function sha256(data: BufferSource) {
@@ -13,8 +13,8 @@ function toHex(data: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>): str
 }
 
 export async function mockKeySaltData(data: Uint8Array) {
-    const { makeDeviceKey } = await import('../utils');
-    const { encrypt } = await import('../../../src/functions/httpTrigger');
+    const { makeDeviceKey } = await import('../utils.js');
+    const { encrypt } = await import('../../../src/functions/httpTrigger.js');
     const deviceKey = await makeDeviceKey();
     const { salt, encryptedData } = await encrypt(deviceKey, data);
     return { deviceKey, salt, encryptedData };

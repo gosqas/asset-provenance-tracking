@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
-import { mockAzureFunctions } from './test/functions/mocks/azureFunctions'
-import { mockAzureStorage } from './test/functions/mocks/azureStorage'
+import { mockAzureFunctions } from './test/functions/mocks/azureFunctions.js'
+import { mockAzureStorage } from './test/functions/mocks/azureStorage.js'
 
 // Global setup for all tests
 
