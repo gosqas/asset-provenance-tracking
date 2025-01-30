@@ -1,6 +1,11 @@
 import { EmailClient, KnownEmailSendStatus } from "@azure/communication-email";
 
 const connectionString = process.env['COMMUNICATION_SERVICES_CONNECTION_STRING'];
+
+if (connectionString === undefined) {
+  throw Error("COMMUNICATION_SERVICES_CONNECTION_STRING is not defined.");
+}
+
 const emailClient = new EmailClient(connectionString);
 
 // Send an email using the Azure Communication Services Email SDK

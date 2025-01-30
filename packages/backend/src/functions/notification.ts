@@ -1,27 +1,6 @@
-import { vi } from 'vitest';
-import { sendEmail } from "./sendEmail";
+import { sendEmail } from "./sendEmail.js";
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { getProvenance, postProvenance } from './httpTrigger';
-
-vi.mock('@azure/communication-email', () => {
-    const mockBeginSend = vi.fn().mockResolvedValue({
-        getOperationState: vi.fn().mockReturnValue({ isStarted: true }),
-        isDone: vi.fn().mockReturnValue(true),
-        poll: vi.fn(),
-        getResult: vi.fn().mockReturnValue({ status: 'Succeeded', id: 'test-id' })
-    });
-
-    return {
-        EmailClient: vi.fn().mockImplementation(() => {
-            return {
-                beginSend: mockBeginSend
-            };
-        }),
-        KnownEmailSendStatus: {
-            Succeeded: 'Succeeded'
-        }
-    };
-});
+import { getProvenance, postProvenance } from './httpTrigger.js';
 
 
 export interface Notification {
@@ -36,7 +15,10 @@ export async function sendNotification(notification: Notification): Promise<void
     // TODO: add rate limiting, queueing, other notification channels and other notification logic
 
     try {
-        const from_address = process.env['FROM_ADDRESS'] || '';
+        const from_address = process.env['FROM_ADDRESS'];
+        if (!from_address) {
+            throw new Error('FROM_ADDRESS is not defined');
+        }
         await sendEmail(from_address, notification.toAddress, notification.subject, notification.body, notification.toName);
     } catch (error) {
         console.error("Failed to send notification", error);
@@ -93,141 +75,146 @@ async function streamToObject(body) {
 }
 
 
-export async function subscribeNotification(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    // This should be called from the frontend or another function like postProvenance
+// export async function subscribeNotification(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+//     // This should be called from the frontend or another function like postProvenance
 
-    console.log("subscribeNotification", JSON.stringify(request));
-    try {
-        const obj = await streamToObject(request.body);
-        console.log("body:", obj);
+//     console.log("subscribeNotification", JSON.stringify(request));
+//     try {
+//         const obj = await streamToObject(request.body);
+//         console.log("body:", obj);
 
-        // TODO: Email will be encrypted in the future, so this could just be a hash
+//         // TODO: Email will be encrypted in the future, so this could just be a hash
 
-        // Validate email
-        if (!obj.email) {
-            throw new Error('Email is required');
-        }
+//         // Validate email
+//         if (!obj.email) {
+//             throw new Error('Email is required');
+//         }
 
-        // Add email to the provenance record
-        const getProv = {
-            params: request.params
-        } as unknown as HttpRequest;
-        const response = await getProvenance(getProv, context);
-        console.log("get provenance", JSON.stringify(response));
+//         // Add email to the provenance record
+//         const getProv = {
+//             params: request.params
+//         } as unknown as HttpRequest;
+//         const response = await getProvenance(getProv, context);
+//         console.log("get provenance", JSON.stringify(response));
 
-        // Subscription logic
-        let j = response.jsonBody;
-        if (!j.subscribers) {
-            j.subscribers = [];
-        }
-        j.subscribers.push(obj.email);
-        console.log("j:", j);
+//         // Subscription logic
+//         let j = response.jsonBody;
+//         if (!j.subscribers) {
+//             j.subscribers = [];
+//         }
+//         j.subscribers.push(obj.email);
+//         console.log("j:", j);
 
-        const postProv = {
-            params: request.params,
-            jsonBody: j,
-        } as unknown as HttpRequest;
+//         const postProv = {
+//             params: request.params,
+//             jsonBody: j,
+//         } as unknown as HttpRequest;
 
-        // Update the provenance record
-        console.log("post provenance", JSON.stringify(postProv));
-        await postProvenance(postProv, context);
-    } catch (error) {
-        console.error(error);
-        return {
-            status: 400, // Bad request
-            body: "Error subscribing"
-        };
-    }
+//         // Update the provenance record
+//         console.log("post provenance", JSON.stringify(postProv));
+//         await postProvenance(postProv, context);
+//     } catch (error) {
+//         console.error(error);
+//         return {
+//             status: 400, // Bad request
+//             body: "Error subscribing"
+//         };
+//     }
 
-    return {
-        status: 200,
-        body: "Subscribed successfully"
-    };
+//     return {
+//         status: 200,
+//         body: "Subscribed successfully"
+//     };
+// }
+
+// export async function unsubscribeNotification(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+//     console.log("unsubscribeNotification", JSON.stringify(request));
+
+//     try {
+//         const obj = await streamToObject(request.body);
+//         console.log("body:", obj);
+
+//         // TODO: Email will be encrypted in the future, so this could just be a hash
+
+//         // Validate email
+//         if (!obj.email) {
+//             throw new Error('Email is required');
+//         }
+
+//         // Add email to the provenance record
+//         const getProv = {
+//             params: request.params
+//         } as unknown as HttpRequest;
+//         const response = await getProvenance(getProv, context);
+//         console.log("get provenance", JSON.stringify(response));
+
+//         // Subscription logic
+//         let j = response.jsonBody;
+//         if (j.subscribers) {
+//             // Remove email from the subscribers list
+//             j.subscribers = j.subscribers.filter(subscriber => subscriber !== obj.email);
+//         }
+//         console.log("j:", j);
+
+//         const postProv = {
+//             params: request.params,
+//             jsonBody: j,
+//         } as unknown as HttpRequest;
+
+//         // Update the provenance record
+//         console.log("post provenance", JSON.stringify(postProv));
+//         await postProvenance(postProv, context);
+//     } catch (error) {
+//         console.error(error);
+//         return {
+//             status: 400, // Bad request
+//             body: "Error subscribing"
+//         };
+//     }
+
+//     return {
+//         status: 200,
+//         body: "Unsubscribed successfully"
+//     };
+// }
+
+
+export async function processNotification(data: any): Promise<void> {
+    console.log("processNotification", JSON.stringify(data));
 }
 
-export async function unsubscribeNotification(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    console.log("unsubscribeNotification", JSON.stringify(request));
-
-    try {
-        const obj = await streamToObject(request.body);
-        console.log("body:", obj);
-
-        // TODO: Email will be encrypted in the future, so this could just be a hash
-
-        // Validate email
-        if (!obj.email) {
-            throw new Error('Email is required');
-        }
-
-        // Add email to the provenance record
-        const getProv = {
-            params: request.params
-        } as unknown as HttpRequest;
-        const response = await getProvenance(getProv, context);
-        console.log("get provenance", JSON.stringify(response));
-
-        // Subscription logic
-        let j = response.jsonBody;
-        if (j.subscribers) {
-            // Remove email from the subscribers list
-            j.subscribers = j.subscribers.filter(subscriber => subscriber !== obj.email);
-        }
-        console.log("j:", j);
-
-        const postProv = {
-            params: request.params,
-            jsonBody: j,
-        } as unknown as HttpRequest;
-
-        // Update the provenance record
-        console.log("post provenance", JSON.stringify(postProv));
-        await postProvenance(postProv, context);
-    } catch (error) {
-        console.error(error);
-        return {
-            status: 400, // Bad request
-            body: "Error subscribing"
-        };
-    }
-
-    return {
-        status: 200,
-        body: "Unsubscribed successfully"
-    };
-}
-
-
-export async function notifySubscribers(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+// export async function notifySubscribers(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function notifySubscribers(records: any): Promise<HttpResponseInit> {
     // When a provenance record is updated, this function will process the subscriptions and send notifications
     
     // Ideally only the subscription object should be needed, so the notification system can be decoupled from the 
     // provenance system prove that it works without provenance data
 
-    console.log("notifySubscribers", JSON.stringify(request));
+    // console.log("notifySubscribers", JSON.stringify(request));
 
     // TODO: // This could take a long time! Add rate limiting, queueing etc.
 
     try {
-        const obj = await streamToObject(request.body);
-        console.log("body:", obj);
+        // const obj = await streamToObject(request.body);
+        // console.log("body:", obj);
 
-        // Validate email
-        if (!obj.subscribers) {
-            throw new Error('Subscribers are required');
-        }
+        // // Validate email
+        // if (!obj.subscribers) {
+        //     throw new Error('Subscribers are required');
+        // }
 
         // Send email to each subscriber
-        for (const subscriber of obj.subscribers) {
-            console.log("Sending notification to", subscriber);
-            const notification = {
-                toAddress: subscriber,
-                toName: "Notification",
-                subject: "Notification",
-                body: "Notification body"
-            };
+        // for (const subscriber of obj.subscribers) {
+        //     console.log("Sending notification to", subscriber);
+        //     const notification = {
+        //         toAddress: subscriber,
+        //         toName: "Notification",
+        //         subject: "Notification",
+        //         body: "Notification body"
+        //     };
             
-            await sendNotification(notification);
-        }
+        //     await sendNotification(notification);
+        // }
 
     } catch (error) {
         console.log(error);
@@ -243,14 +230,14 @@ export async function notifySubscribers(request: HttpRequest, context: Invocatio
 }
 
 
-app.get("subscribeNotification", {
-    authLevel: 'anonymous',
-    route: 'notification/subscribe',
-    handler: subscribeNotification
-})
+// app.get("subscribeNotification", {
+//     authLevel: 'anonymous',
+//     route: 'notification/subscribe',
+//     handler: subscribeNotification
+// })
 
-app.post("unsubscribeNotification", {
-    authLevel: 'anonymous',
-    route: 'notification/unsubscribe',
-    handler: unsubscribeNotification
-})
+// app.post("unsubscribeNotification", {
+//     authLevel: 'anonymous',
+//     route: 'notification/unsubscribe',
+//     handler: unsubscribeNotification
+// })
