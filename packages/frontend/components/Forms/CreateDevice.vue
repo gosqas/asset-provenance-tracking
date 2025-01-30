@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
 
 <template>
     <!-- Form for creating a new record. Uses custom form submission. -->
-    <form enctype="multipart/form-data" class="bg-frost p-3" @submit.prevent="submitForm">
+    <form method="post" enctype="multipart/form-data" class="bg-frost p-3" @submit.prevent="submitForm">
         <h4 class="text-iris mt-1 mb-3">Create New Record</h4>
  
  
