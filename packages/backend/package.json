@@ -2,7 +2,8 @@
   "name": "gosqas-az-func",
   "version": "0.0.0-placeholder",
   "description": "",
-  "main": "dist/src/functions/*.js",
+  "main": "dist/src/functions/httpTrigger.js",
+  "type":"module",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",

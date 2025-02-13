@@ -1,6 +1,3 @@
-// nuxt.config.ts -- default configuration f0r framework 
-
-
 // Copyright (C) 2024 GOSQAS Team
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -14,10 +11,6 @@
 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-// https://nuxt.com/docs/api/configuration/nuxt-config
-const globalBaseUrl = 'https://gosqasbe.azurewebsites.net/api';
-
-
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -26,15 +19,26 @@ export default defineNuxtConfig({
     // The private keys which are only available server-side
     // Keys within public are also exposed client-side
     public: {
-      baseUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : globalBaseUrl,
-      apiBase: '/api',
-      frontendUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:3000',
+      // The backend URL defaults to staging because the current CI/CD pipeline deploys main to staging.
+      // This also allows us to test frontend development with a real backend.
+      // There is also a bug with Azure Functions where the env vars are not set correctly.
+      // For local development, set baseUrl to http://localhost:7071/api
+      baseUrl: process.env.BACKEND_URL ?? 'https://gosqasbe.azurewebsites.net/api', 
+      frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
     }
   },
   modules: ['@nuxt/test-utils/module', 'nuxt-snackbar'],
   snackbar: {
     bottom: true,
     duration: 5000
+  },
+  hooks: {
+    ready(nuxt) {
+      // Log the app config to ensure it is correct when deployed.
+      console.log(`App Config:
+baseUrl: ${nuxt.options.runtimeConfig.public.baseUrl}
+frontendUrl: ${nuxt.options.runtimeConfig.public.frontendUrl}`);
+    }
   },
   compatibilityDate: '2024-11-12'
 });
