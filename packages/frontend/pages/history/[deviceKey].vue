@@ -19,8 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
     -->
 
 <script setup lang="ts">
+  import { useRoute, useRouter } from 'vue-router';
   const route = useRoute()
   const recordKey = route.params.deviceKey as string;
+  const qrCodeUrl = `${useRuntimeConfig().public.frontendUrl}/history/${recordKey}`;
+
 </script>
 
 <template>
@@ -74,11 +77,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
           <!-- Spied element -->
           <div  data-mdb-scrollspy-init data-spy="scroll" data-mdb-target="#jump-to" data-mdb-offset="0" class="left-col" >
             <section id="device-details">
-              <div class="my-4 text-iris fs-1">"{{ deviceRecord?.deviceName }}" Asset History Records</div>
+              <div class="my-4 text-iris fs-1">
+                <p class="text-bold mb-0">Asset History Records</p>
+                <h1 class="mt-1 mb-1 text-iris">
+                  {{ deviceRecord?.deviceName }}
+                </h1>
+              </div>
+              <div class="qr-code-container">
+                <div class="qr-code-wrapper">
+                  <QRCode :url="qrCodeUrl" ref="qrcode_component" style="border-radius: 15px; overflow: hidden;"/>
+                </div>
+                <div class="wrapper-download">
+                  <button class="btn mt-0 bg-sky px-5 p-3" @click="downloadQRCode">Download QR Code</button>
+                </div>
+              </div>
               <div>Record Key: {{ _recordKey }}</div>
-              <div><span v-html="clickableLink(deviceRecord?.description)"></span></div>
-            </section>
-
+              <div>
+                  <span v-html="clickableLink(deviceRecord?.description)"></span>
+              </div>
+          </section>
             <section ref= "section" id="priority-notices">
               <ProvenancePriorityNotices :recordKey="_recordKey" :provenance="provenance"/>
             </section>
@@ -173,6 +190,10 @@ export default {
         EventBus.off('feedRefresh', this.refreshFeed);
     },
     methods: {
+      downloadQRCode() {
+            const qrCodeComponent = this.$refs.qrcode_component as any;
+            qrCodeComponent?.downloadQRCode()
+        },
       addScrollListener() {
         // When user scrolls, the nav bar is updated
         window.addEventListener('scroll', () => {
@@ -238,6 +259,66 @@ export default {
 
 </script>
 <style>
+#device-details {
+    margin: 20px auto;
+    position: relative;
+}
+
+.qr-code-wrapper {
+  background-color:#4e3681; /* Light blue background */
+  padding:13px;
+  padding-bottom: 7px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform:scale(0.775);
+  margin: -20px;
+  transition-duration: 0.4s;
+}
+.qr-code-wrapper:hover {
+  transform: scale(0.825);
+}
+.qr-code-container {
+  margin-top: -110px;
+  margin-right: 15px;
+  display: inline-block;
+  background-color: rgb(238, 247, 255); /* Light blue background */
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position:absolute;
+  right: 0;
+  transform:scale(1.1);
+  /* transform-origin: top right; */
+}
+.wrapper-download {
+  padding: 0;
+  text-align: center;
+  padding-bottom: 15px;
+  transform: scale(0.95);
+  margin-top: -30px;
+  transition-duration: 0.4s;
+}
+.wrapper-download:hover {
+  transform: scale(1);
+}
+.download-button {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.download-button:hover {
+    background-color:#4e3681; /* Slightly darker blue on hover */
+}
 
 .menu-spacing {
   padding-top: 34px;

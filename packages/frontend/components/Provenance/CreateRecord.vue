@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
 -->
 
 <template>
-    <form enctype="multipart/form-data" class='bg-frost' @submit.prevent="submitRecord">
+    <form enctype="multipart/form-data" class='bg-frost mb-5' @submit.prevent="submitRecord">
       <h5 class="text-iris">Create New Record Entry</h5>
       <div>
         <input type="text" class="form-control" name="description" id="provenance-description" v-model="description" placeholder="Description" required/>

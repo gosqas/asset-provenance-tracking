@@ -13,34 +13,77 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
 <script setup lang="ts">
-const route = useRoute()
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import GenerateQRCode from '~/components/GenerateQRCode.vue';
+import KeyList from '~/components/KeyList.vue';
+import { getProvenance } from '~/services/azureFuncs';
+import clickableLink from '~/utils/clickableLink';
+import QRCode from '@/components/QRCode.vue';
+
+const route = useRoute();
 const recordKey = route.params.deviceKey;
 const qrCodeUrl = `${useRuntimeConfig().public.frontendUrl}/history/${recordKey}`;
+
+const isLoading = ref(true);
+const hasReportingKey = ref(false);
+const childKeys = ref<string[]>([]);
+const loadingKey = ref(0);
+const deviceRecord = ref<any>(null);
+const qrcode_component = ref(null);
+
+const forceRerender = () => {
+    loadingKey.value += 1;
+};
+
+const downloadQRCode = () => {
+    qrcode_component.value?.downloadQRCode();
+};
+
+const viewRecord = () => {
+    navigateTo(`/history/${recordKey}`);
+};
+
+onMounted(async () => {
+    try {
+        const deviceKey = route.params.deviceKey as string;
+        const response = await getProvenance(deviceKey);
+        deviceRecord.value = response[response.length - 1].record;
+        isLoading.value = false;
+        hasReportingKey.value = !!deviceRecord.value.reportingKey;
+
+        if (hasReportingKey.value) {
+            const index = deviceRecord.value.children_key.indexOf(deviceRecord.value.reportingKey, 0);
+            if (index > -1) {
+                deviceRecord.value.children_key.splice(index, 1);
+            }
+        }
+        childKeys.value = deviceRecord.value.children_key;
+    } catch (error) {
+        snackbar.add({
+            type: 'error',
+            text: 'No record found'
+        });
+    }
+});
 </script>
 
 <template>
   <div class="container-md my-4" v-if="!isLoading" :key="loadingKey">
     <div class="row justify-content-between">
         <div class="col-sm-6 col-lg-9">
-
-            <h1 class="mt-4 mb-2 text-iris">{{deviceRecord.deviceName}}</h1>
-            <!-- TODO: We might want to call this an Admin key if it has a reporting key -->
-        
+            <h1 class="mt-4 mb-2 text-iris">{{deviceRecord?.deviceName}}</h1>
             <h5>Record Key: {{ route.params.deviceKey }}</h5>
-            <div class="my-2"><span v-html="clickableLink(deviceRecord.description)"></span></div>
+            <div class="my-2"><span v-html="clickableLink(deviceRecord?.description)"></span></div>
         
             <div> 
                 <button class="btn mt-1 bg-iris text-white me-4 px-4" @click="viewRecord">View Provenance Records</button>
                 <button class="btn mt-1 bg-sky px-5" @click="downloadQRCode">Download QR Code</button>
             </div>
-
         </div>
         <div class="col-sm-6 col-lg-3 mt-2">
-
             <QRCode :url="qrCodeUrl" ref="qrcode_component"/>
-
         </div>
-
     </div>
 
     <div v-if="hasReportingKey"> Reporting Key:
@@ -50,7 +93,7 @@ const qrCodeUrl = `${useRuntimeConfig().public.frontendUrl}/history/${recordKey}
         <div> Child Keys:
             <div> <KeyList v-bind:keys="childKeys"/> </div>
         </div>    
-        <CsvFile :deviceKey="recordKey"></CsvFile>
+        <CsvFile :recordKey="_recordKey"></CsvFile>
     </div>
   </div>
 </template>

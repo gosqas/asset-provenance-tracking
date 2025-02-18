@@ -22,40 +22,50 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
     <div>
         <div v-for="(report, index) in provenance" class="report-box">
             <template v-if="report.record.blobType === 'deviceInitializer'">
-                <h3 id = "createdDevicePoint">Created Record: {{ report.record.deviceName }}</h3>
+                <h3 id="createdDevicePoint">Created Record: {{ report.record.deviceName }}</h3>
             </template>
 
-            <div style="font-size: small; font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px; line-height: 30px; color: #1E2019;">
-            {{ new Date(report.timestamp) }}
+            <div
+                style="font-size: small; font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px; line-height: 30px; color: #1E2019;">
+                {{ new Date(report.timestamp) }}
             </div>
             <div style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 20px; line-height: 30px;">
                 <span v-html="clickableLink(report.record?.description)"></span>
             </div>
             <div class="mb-1 tag-container">
-                <span class="tag" v-for="tag in report.record.tags" v-bind:style="'color: '+textColorForTag(tag)+'; background-color: '+getColorForTag(tag)+';'">
-                {{tag}}</span>
+                <span class="tag" v-for="tag in report.record.tags"
+                    v-bind:style="'color: ' + textColorForTag(tag) + '; background-color: ' + getColorForTag(tag) + ';'">
+                    {{ tag }}</span>
             </div>
-            
-            
-            <div v-for="(attachment, i) in attachmentURLs[index.toString()]" :key="i">
-                <!-- Image -->
-                <img :src="attachment.url" :alt="Image" style="width: 150px; padding: 5px;" data-bs-toggle="modal" data-bs-target="#imageModal" @click="modalImage = attachment.url">
-                <a :href="attachment.url" :download="attachment.fileName" style="display: block; padding: 5px; text-align: left;">
+
+
+            <div v-for="(attachment, i) in attachmentURLs[index.toString()]" :key="i" class="attachment-wrapper">
+                <img :src="attachment.url" :alt="attachment.fileName" class="thumbnail" data-bs-toggle="modal"
+                    data-bs-target="#imageModal" @click="modalImage = attachment.url">
+                <a :href="attachment.url" :download="attachment.fileName" class="download-link">
                     Download File
                 </a>
             </div>
-            
+
 
         </div>
     </div>
-        <!-- The Modal to Enlarge Image -->
-        <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                 <div class="modal-content">
-                        <img v-bind:src="modalImage" alt="Image" class="img-fluid">
-                </div>
+    <!-- The Modal to Enlarge Image -->
+    <!-- Image Preview Modal -->
+    <!-- Image Preview Modal -->
+    <!-- Image Preview Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img :src="attachment.url" :alt="attachment.fileName" class="modal-image">
             </div>
         </div>
+    </div>
+</div>
 </template>
 
 <script>
@@ -91,7 +101,7 @@ export default {
             try {
                 if (report.attachments.length > 0) {
                     const baseUrl = useRuntimeConfig().public.baseUrl;
-                    const attachmentPromises = report.attachments.map(attachmentID => getAttachment(baseUrl,this.recordKey, attachmentID));
+                    const attachmentPromises = report.attachments.map(attachmentID => getAttachment(baseUrl, this.recordKey, attachmentID));
                     const attachments = await Promise.all(attachmentPromises);
 
                     // Create object URLs for attachments and include filenames
@@ -117,26 +127,108 @@ export default {
 
 <style scoped>
 .report-box {
-  background-color: #F1F5F9;
-  padding: 20px;
-  margin-bottom: 14px;
-  border-radius: 20px;
-  width: 70%; /* Assuming the width is to fill the container */
-  word-wrap: break-word;
+    background-color: #F1F5F9;
+    padding: 20px;
+    margin-bottom: 14px;
+    margin-top: 14px;
+    border-radius: 20px;
+    width: 70%;
+    /* Assuming the width is to fill the container */
+    word-wrap: break-word;
 
 }
+
 .tag-container {
-  display: flex;
-  flex-wrap: wrap;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .tag {
-  background-color: #f2f2f2;
-  color: #333;
-  padding: 5px 10px;
-  margin: 5px;
-  border-radius: 5px;
-  font-size: 14px;
+    background-color: #f2f2f2;
+    color: #333;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    transform: scale(1);
+    transition-duration: 0.4s;
+    margin-left: 0px;
+}
+
+.tag:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.attachment-wrapper {
+    margin: 10px 0;
+}
+
+.thumbnail {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.thumbnail:hover {
+    transform: scale(1.05);
+}
+
+.download-link {
+    display: block;
+    padding: 5px;
+    margin-top: 5px;
+    color: #4e3681;
+    text-decoration: none;
+}
+
+.download-link:hover {
+    text-decoration: underline;
+}
+
+/* Modal Styles */
+
+.modal-header {
+    border: none;
+    padding: 1rem;
+    position: absolute;
+    right: 0;
+    z-index: 1;
+}
+
+.btn-close {
+    background-color: white;
+    opacity: 0.8;
+    border-radius: 50%;
+    padding: 0.5rem;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+.modal-content {
+    background-color: rgba(0, 0, 0, 0.9);
+    border: none;
+}
+
+.modal-body {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    
+    
+}
+
+.modal-image {
+    display: block;
+    height: auto;
+    margin: auto;
+    max-width: 100%;
+    
 }
 </style>
-    
