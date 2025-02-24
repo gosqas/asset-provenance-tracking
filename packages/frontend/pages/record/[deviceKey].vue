@@ -25,11 +25,11 @@ const qrCodeUrl = `${useRuntimeConfig().public.frontendUrl}/history/${recordKey}
 
             <h1 class="mt-4 mb-2 text-iris">{{deviceRecord.deviceName}}</h1>
             <!-- TODO: We might want to call this an Admin key if it has a reporting key -->
-        
+
             <h5>Record Key: {{ route.params.deviceKey }}</h5>
             <div class="my-2"><span v-html="clickableLink(deviceRecord.description)"></span></div>
-        
-            <div> 
+
+            <div>
                 <button class="btn mt-1 bg-iris text-white me-4 px-4" @click="viewRecord">View Provenance Records</button>
                 <button class="btn mt-1 bg-sky px-5" @click="downloadQRCode">Download QR Code</button>
             </div>
@@ -49,7 +49,7 @@ const qrCodeUrl = `${useRuntimeConfig().public.frontendUrl}/history/${recordKey}
     <div v-if="(childKeys?.length > 0) || hasReportingKey ">
         <div> Child Keys:
             <div> <KeyList v-bind:keys="childKeys"/> </div>
-        </div>    
+        </div>
         <CsvFile :deviceKey="recordKey"></CsvFile>
     </div>
   </div>
@@ -86,7 +86,7 @@ export default {
     },
     methods: {
         //This method helps rerendering the site
-        forceRerender() { 
+        forceRerender() {
             this.loadingKey += 1;
         },
         downloadQRCode() {
@@ -94,6 +94,7 @@ export default {
             qrCodeComponent?.downloadQRCode()
         },
         viewRecord() {
+            const route = useRouter().currentRoute.value; // Bug workaround: https://stackoverflow.com/questions/76127659/route-params-are-undefined-in-layouts-components-in-nuxt-3
             navigateTo(`/history/${route.params.deviceKey}`);
         }
     },
