@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
  
  
         <div>
-            <input type="text" class="form-control" v-model="name" required placeholder="Record Name">
+            <input type="text" class="form-control" v-model="name" required placeholder="Record Title">
             <input type="text" class="form-control mt-3" v-model="description" required placeholder="Record Description">
             <div style="display: block;">
                 <h4 class="mt-3 mb-3 text-iris">Record Image (optional)</h4>
